@@ -1,6 +1,7 @@
 const rp =  require("request-promise");
 const TOKEN_URI = "https://accounts.spotify.com/api/token";
 const SEARCH_URI = "https://api.spotify.com/v1/search?type=";
+const RECOMMENDATIONS_URI = "https://api.spotify.com/v1/recommendations?market=US&limit=8&seed_artists=4NHQUGzhtTLFvgF5SZesLK&seed_tracks=0c6xIDDpzE81m2q797ordA&min_energy=0.4&min_popularity=50";
 
 class Spotify {
   constructor(credentials) {
@@ -33,6 +34,10 @@ class Spotify {
       throw new Error("You must specify a type and query for your search.");
     }
 
+    console.log('tttoken');
+    console.log(this.token);
+    console.log('is token expired');
+    console.log(this.isTokenExpired());
     if (
       !this.token ||
       !this.token.expires_in ||
@@ -40,11 +45,54 @@ class Spotify {
       !this.token.access_token ||
       this.isTokenExpired()
     ) {
+      console.log('i will set token');
       request = this.setToken().then(() => {
         opts.headers = this.getTokenHeader();
         return rp(opts);
       });
     } else {
+      console.log('else no set token');
+      opts.headers = this.getTokenHeader();
+      request = rp(opts);
+    }
+
+    if (cb) {
+      request
+        .then((response) => cb(null, response))
+        .catch((err) => cb(err, null));
+    } else {
+      return request;
+    }
+  }
+
+  recommendations(search, cb ){
+    let request;
+    const opts = {
+      method: "GET",
+      uri:
+      RECOMMENDATIONS_URI 
+      /*+
+        "limit=" +
+        (search.limit || "20") +
+        "&market=" +
+        (search.market || "")*/,
+      json: true
+    };
+
+    if (
+      !this.token ||
+      !this.token.expires_in ||
+      !this.token.expires_at ||
+      !this.token.access_token ||
+      this.isTokenExpired()
+    ) {
+      console.log('i will set token');
+      request = this.setToken().then(() => {
+        opts.headers = this.getTokenHeader();
+        return rp(opts);
+      });
+    } else {
+      console.log('else no set token');
       opts.headers = this.getTokenHeader();
       request = rp(opts);
     }
