@@ -15,6 +15,11 @@ const scopes = 'user-read-private user-read-email';
 const forwardingAddress = "{ngrok forwarding address}"; // Replace this with your HTTPS Forwarding address
 const s = new Spotify({id: clientId, secret: clientSecret});
 
+app.use(function(req, res, next) {
+  res.setHeader("Content-Security-Policy", "script-src 'self' https://apis.google.com");
+  return next();
+});
+
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
